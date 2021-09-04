@@ -127,7 +127,6 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs),
         println("onDraw")
         super.onDraw(canvas)
 
-
         // 텍스트 그리기 (타이틀, y축 값)
         val textPaint = Paint()
         textPaint.color = Color.BLUE
@@ -135,10 +134,10 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs),
         textPaint.textAlign = Paint.Align.RIGHT
 
         for (i in mPointY.indices) {
-            canvas?.drawText(mPoints[i].toString(), 150F, mPointY[i].toFloat(), textPaint)
+            canvas?.drawText(mPoints[i].toString(), 130F, mPointY[i].toFloat(), textPaint)
         }
 
-        canvas?.drawText("Title", 300F, mPointY.lastIndex.toFloat() + 100, textPaint)
+//        canvas?.drawText("Title", 300F, mPointY.lastIndex.toFloat() + 100, textPaint)
 
         // 선 그리기
         canvas?.let { mLineShape.draw(it) }
@@ -152,8 +151,6 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs),
                 mPointY[i].toFloat(), mPointRadius.toFloat(), mPointPaint
             )
         }
-
-
     }
 
     override fun onGlobalLayout() {

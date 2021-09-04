@@ -1,52 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="activity"
             type="com.github.stonybean.mygraph.MainActivity" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
+        <ScrollView
+            android:id="@+id/sv_cell_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="SpeakableTextPresentCheck">
+
+            <LinearLayout
+                android:id="@+id/ll_cell_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:gravity="center"
+                android:orientation="horizontal" />
+
+        </ScrollView>
+
         <com.github.stonybean.mygraph.GraphView
             android:id="@+id/gv_cell"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!--    <LinearLayout-->
-        <!--        android:layout_width="match_parent"-->
-        <!--        android:layout_height="0dp"-->
-        <!--        android:orientation="horizontal"-->
-        <!--        app:layout_constraintTop_toBottomOf="@+id/layout"-->
-        <!--        app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--        >-->
-        <!--        -->
-        <!--        <TextView-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:text="hi" />-->
-        <!--    </LinearLayout>-->
+            android:layout_height="250dp"
+            app:layout_constraintTop_toBottomOf="@+id/sv_cell_title" />
 
         <ScrollView
-            android:id="@+id/sv_cell"
+            android:id="@+id/sv_cell_item"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/fab" >
+            app:layout_constraintTop_toBottomOf="@+id/fab"
+            tools:ignore="SpeakableTextPresentCheck">
 
             <LinearLayout
-                android:id="@+id/ll_cell"
+                android:id="@+id/ll_cell_item"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:animateLayoutChanges="true"
-                android:orientation="vertical"/>
+                android:orientation="vertical" />
         </ScrollView>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -54,10 +59,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_input_add"
-            app:layout_constraintBottom_toTopOf="@+id/sv_cell"
+            app:layout_constraintBottom_toTopOf="@+id/sv_cell_item"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/gv_cell" />
+            app:layout_constraintTop_toBottomOf="@+id/gv_cell"
+            tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

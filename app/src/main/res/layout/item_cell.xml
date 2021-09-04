@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
@@ -12,7 +12,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:inputType="text"
-            android:text="hihihi"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -28,7 +27,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
-                android:text="1111111"
                 android:textAlignment="textEnd"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
@@ -38,7 +36,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
-                android:text="222222"
                 android:textAlignment="textEnd"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
@@ -48,7 +45,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
-                android:text="222222"
                 android:textAlignment="textEnd"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
