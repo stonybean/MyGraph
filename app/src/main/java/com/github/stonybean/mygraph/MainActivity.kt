@@ -106,7 +106,6 @@ class MainActivity : AppCompatActivity() {
         itemCellBinding.etItem1.addTextChangedListener(CellItemTextChangedListener(titleTag))
         itemCellBinding.etItem2.addTextChangedListener(CellItemTextChangedListener(titleTag))
         itemCellBinding.etItem3.addTextChangedListener(CellItemTextChangedListener(titleTag))
-        
         layout.addView(itemCellBinding.root)
     }
 
