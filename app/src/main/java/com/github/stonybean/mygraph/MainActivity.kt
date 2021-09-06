@@ -6,22 +6,22 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.core.view.marginEnd
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.stonybean.mygraph.databinding.ActivityMainBinding
 import com.github.stonybean.mygraph.databinding.ItemCellBinding
-import com.github.stonybean.mygraph.databinding.ItemCellTitleBinding
+import com.github.stonybean.mygraph.databinding.ItemCellTextBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private val pointList: ArrayList<ArrayList<Int>> = ArrayList()      // 그래프 그릴 때 넘겨줄 전체 포인트값
+    private val pointHashMap: HashMap<Int, ArrayList<Int>> = HashMap()  // Tag 별도 관리 (EditText별)
+
     private val viewModel: ViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,19 +30,31 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.activity = this@MainActivity
 
-        val points = intArrayOf(20, 140, 100)
+        val points: ArrayList<Int> = ArrayList()
+        val points2: ArrayList<Int> = ArrayList()
+        val color: ArrayList<Int> = ArrayList()
 
-//        val =
-            println("??? ${points.sum() / (points.size + 2)}")
+        points.add(20)
+        points.add(100)
+        points.add(50)
+        color.add(Color.BLUE)
+
+        points2.add(80)
+        points2.add(200)
+        points2.add(100)
+        color.add(Color.RED)
+
+        val test: ArrayList<ArrayList<Int>> = ArrayList()
+        test.add(points)
+        test.add(points2)
+
+
         // 전체 개수 + 2 (맨 아래, 위)
-
         // 전체 합 / , 원점은 0, 총 10줄로 나누어진 그래프를 그린다
-        binding.gvCell.setPoints("", points, points.sum() / (points.size + 2), 0, points.size)
+        binding.gvCell.setType(color)
+        binding.gvCell.setPoints(test, points.sum() / 3, 0, points.size)
         binding.gvCell.drawForBeforeDrawView()
 
-//        viewModel.cellTitle.observe(this, Observer {
-//
-//        })
 
         val button = binding.fab
         button.setOnClickListener {
@@ -50,19 +62,30 @@ class MainActivity : AppCompatActivity() {
             addCell()
         }
 
+        // 그래프 타이틀, y축 데이터 초기화
         binding.llCellTitle.removeAllViews()
-//        viewModel.addCellTitle(this, binding.llCellTitle)
+        binding.llCellUnit.removeAllViews()
     }
 
 
     fun addCellTitle(childCount: Int, title: String) {
 
-        val itemCellTitleBinding = ItemCellTitleBinding.inflate(layoutInflater)
+        val itemCellTextBinding = ItemCellTextBinding.inflate(layoutInflater)
 
-        itemCellTitleBinding.tvCellTitle.tag = childCount
-        itemCellTitleBinding.tvCellTitle.text = title
+        itemCellTextBinding.tvCellTitle.tag = childCount
+        itemCellTextBinding.tvCellTitle.text = title
 
-        binding.llCellTitle.addView(itemCellTitleBinding.root)
+        binding.llCellTitle.addView(itemCellTextBinding.root)
+    }
+
+    fun addCellUnit(childCount: Int, point: String) {
+
+        val itemCellTextBinding = ItemCellTextBinding.inflate(layoutInflater)
+
+        itemCellTextBinding.tvCellTitle.tag = childCount
+        itemCellTextBinding.tvCellTitle.text = title
+
+        binding.llCellUnit.addView(itemCellTextBinding.root)
     }
 
     fun addCell() {
@@ -70,21 +93,20 @@ class MainActivity : AppCompatActivity() {
         val layout = binding.llCellItem
         val itemCellBinding = ItemCellBinding.inflate(layoutInflater)
 
-        println("??? ${layout.childCount}")
-        itemCellBinding.etTitle.tag = layout.childCount + 1
+//        itemCellBinding.etTitle.tag = layout.childCount + 1
+        itemCellBinding.etTitle.tag = layout.childCount
 
-        itemCellBinding.etTitle.addTextChangedListener(CellTitleTextChangedListener(itemCellBinding.etTitle.tag as Int))
-
-        itemCellBinding.etItem1.addTextChangedListener(CellItemTextChangedListener())
-        itemCellBinding.etItem2.addTextChangedListener(CellItemTextChangedListener())
-        itemCellBinding.etItem3.addTextChangedListener(CellItemTextChangedListener())
-
+        val titleTag = itemCellBinding.etTitle.tag
         // title TextView와 똑같이 맞추기 위함
-        
-//        itemCellBinding.etItem1.tag = "${layout.childCount + 1}"
-//        itemCellBinding.etItem2.tag = "${layout.childCount + 1}"
-//        itemCellBinding.etItem3.tag = "${layout.childCount + 1}"
+        itemCellBinding.etItem1.tag = titleTag
+        itemCellBinding.etItem2.tag = titleTag
+        itemCellBinding.etItem3.tag = titleTag
 
+        itemCellBinding.etTitle.addTextChangedListener(CellTitleTextChangedListener(titleTag as Int))
+        itemCellBinding.etItem1.addTextChangedListener(CellItemTextChangedListener(titleTag))
+        itemCellBinding.etItem2.addTextChangedListener(CellItemTextChangedListener(titleTag))
+        itemCellBinding.etItem3.addTextChangedListener(CellItemTextChangedListener(titleTag))
+        
         layout.addView(itemCellBinding.root)
     }
 
@@ -93,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         override fun afterTextChanged(p0: Editable?) {
 
         }
+
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
         }
@@ -107,7 +130,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    inner class CellItemTextChangedListener: TextWatcher {
+    inner class CellItemTextChangedListener(tag: Int) : TextWatcher {
+        private val currentTag = tag
         override fun afterTextChanged(p0: Editable?) {
 
         }
@@ -117,6 +141,45 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            val point: ArrayList<Int> = ArrayList()
+            point.add(p0.toString().toInt())
+
+            //        val points: ArrayList<Int> = ArrayList()
+            //        val points2: ArrayList<Int> = ArrayList()
+            //        points.add(20)
+            //        points.add(100)
+            //        points.add(50)
+            // points = (20, 100, 50)
+            // points2 = (120, 200, 30)
+
+            if (pointHashMap[currentTag] == null) {
+                pointList[currentTag] = point
+                pointHashMap[currentTag] = point
+            } else {
+                pointList[currentTag].add(point.toString().toInt())
+                pointHashMap[currentTag]?.add(p0.toString().toInt())
+            }
+
+            var isCorrect = true
+            pointList.forEach {
+                if (it.size != 3) {
+                    // 하나의 아이템이라도 비어있으면 false
+                    isCorrect = false
+                }
+            }
+
+            if (isCorrect) {
+                // 그래프 그리기 요청
+                binding.gvCell.setPoints(
+                    pointList,
+                    pointList[currentTag].sum() / 3,
+                    0,
+                    pointList[currentTag].size
+                )
+                binding.gvCell.drawForBeforeDrawView()
+            } else {
+                Toast.makeText(this@MainActivity, "항목을 모두 채워주세요.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
