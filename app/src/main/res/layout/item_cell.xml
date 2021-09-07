@@ -3,14 +3,20 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
         android:orientation="horizontal">
 
         <EditText
             android:id="@+id/et_title"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="1dp"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="1dp"
             android:layout_weight="1"
+            android:background="@color/white"
+            android:gravity="center"
             android:inputType="text"
             android:textColor="@color/black"
             android:textSize="20sp"
@@ -19,14 +25,21 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="1dp"
             android:layout_weight="1"
+            android:background="@color/black"
             android:orientation="vertical">
 
             <EditText
                 android:id="@+id/et_item1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginBottom="1dp"
+                android:layout_weight="1"
+                android:background="@color/white"
                 android:inputType="numberDecimal"
+                android:padding="5dp"
                 android:textAlignment="textEnd"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
@@ -34,8 +47,12 @@
             <EditText
                 android:id="@+id/et_item2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginBottom="1dp"
+                android:layout_weight="1"
+                android:background="@color/white"
                 android:inputType="numberDecimal"
+                android:padding="5dp"
                 android:textAlignment="textEnd"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
@@ -43,8 +60,11 @@
             <EditText
                 android:id="@+id/et_item3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/white"
                 android:inputType="numberDecimal"
+                android:padding="5dp"
                 android:textAlignment="textEnd"
                 android:textColor="@color/black"
                 android:textSize="18sp" />

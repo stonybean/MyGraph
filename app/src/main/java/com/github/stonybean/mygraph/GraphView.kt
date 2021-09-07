@@ -1,10 +1,7 @@
 package com.github.stonybean.mygraph
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.PathShape
 import android.util.AttributeSet
@@ -15,10 +12,8 @@ import android.view.View
  */
 class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
-    //    private lateinit var mLineShape: ShapeDrawable
-    private val pointPaintList: ArrayList<Paint> = ArrayList()
-    private val mLineShape: ArrayList<ShapeDrawable> = ArrayList()
-    private lateinit var pointPaint: Paint
+//    private lateinit var pointPaint: Paint
+
 
     private var thickness: Float = 0F
 
@@ -33,11 +28,31 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private var origin: Int = 0
     private var divide: Int = 0
 
+    private val linePathList: ArrayList<Path> = ArrayList()     // 선 관리 리스트
+    private val pointPaintList: ArrayList<Paint> = ArrayList()  // 점별 색깔 관리 리스트
+    private val paintList: ArrayList<Paint> = ArrayList()       // 선별 색깔 관리 리스트
 
+    // 그래프 초기화
+    fun clearGraph() {
+        linePathList.clear()
+        pointPaintList.clear()
+        paintList.clear()
+        lineColorList.clear()
+
+        pointList.clear()
+        xList.clear()
+        yList.clear()
+    }
+
+    // 색깔 지정
     fun setType(colorList: ArrayList<Int>) {
+        colorList.forEach {
+            val pointPaint = Paint()
+            pointPaint.color = it
+            pointPaintList.add(pointPaint)
+        }
 
-        pointPaint = Paint()
-        pointPaint.color = Color.BLACK
+        println("pointPaintList : ${pointPaintList.toList()}")
 
         pointSize = 20
         pointRadius = pointSize / 2
@@ -47,7 +62,7 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     }
 
-    //그래프 정보를 받는다
+    // 그래프 정보
     fun setPoints(points: ArrayList<ArrayList<Int>>, unit: Int, origin: Int, divide: Int) {
         pointList.addAll(points)   //y축 값 배열
 
@@ -56,29 +71,28 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         this.divide = divide   //y축 값 갯수
     }
 
-    //그래프를 만든다
+    // 그래프 만들기
     private fun draw() {
-        val path = Path()
-        val height = height
+        val height = 810    // 높이 820으로 고정 아래,위 여백 10
 
-        println("mLineColor : ${lineColorList.toList()}")
         for (i in pointList.indices) {
+            val path = Path()
             val points = pointList[i]
 
-            //x축 점 사이의 거리
+            // 점 사이 거리 (x축)
             val gapX = width.toFloat() / points.size
 
-            //y축 단위 사이의 거리
+            // 단위 사이 거리 (y축)
             val gapY = (height - pointSize) / divide
 
             val halfGab = gapX / 2
 
-            val length = points.size
+            val length = points.size    // 3
 
             for (j in 0 until length) {
                 // 점 좌표 구하기
-                val x = halfGab + (j * gapX)
-                val y = height - pointRadius - (((points[j] / unit) - origin) * gapY)
+                val x = halfGab + (j * gapX)    // x 좌표
+                val y = height - points[j]      // y 좌표
 
                 xList.add(x.toInt())
                 yList.add(y)
@@ -89,19 +103,19 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 else
                     path.lineTo(x, y.toFloat())
             }
+            linePathList.add(path)  // 선 path 저장
 
-            // 그려진 선으로 shape을 만든다
+            // 그려진 선 칠하기
             val shape = ShapeDrawable(PathShape(path, 1F, 1F))
             shape.setBounds(0, 0, 1, 1)
 
             val paint = shape.paint
             paint.style = Paint.Style.STROKE
             paint.color = lineColorList[i]
-//            println("paint.color : ${paint.color}")
             paint.strokeWidth = thickness
             paint.isAntiAlias = true
 
-            mLineShape.add(shape)
+            paintList.add(paint)
         }
     }
 
@@ -116,99 +130,28 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         println("onDraw")
         super.onDraw(canvas)
 
-        // 선 그리기
-        mLineShape.forEachIndexed { index, shape ->
-            canvas?.let { mLineShape[index].draw(it) }
+        // 선 그리기 (색깔 구분)
+        for (i in linePathList.indices) {
+            canvas?.drawPath(linePathList[i], paintList[i])
         }
 
         // 점 그리기
         val length = xList.size
         for (i in 0 until length) {
+
+            // TODO : 점 색깔 구분 처리.... ?
+            val paint = Paint()
+            paint.color = Color.BLACK
+//            if (i < 3) {
+//               paint = pointPaintList[0]
+//            } else {
+//               paint = pointPaintList[1]
+//            }
             canvas?.drawCircle(
                 xList[i].toFloat(),
-                yList[i].toFloat(), pointRadius.toFloat(), pointPaint
+                yList[i].toFloat(), pointRadius.toFloat(),
+                paint
             )
         }
     }
-
-//    //그래프 정보를 받는다
-//    fun setPoints(points: IntArray, unit: Int, origin: Int, divide: Int) {
-//        mPoints = points   //y축 값 배열
-//
-//        mUnit = unit       //y축 단위
-//        mOrigin = origin   //y축 원점
-//        mDivide = divide   //y축 값 갯수
-//    }
-
-//    //그래프를 만든다
-//    private fun draw() {
-//        val path = Path()
-//
-//        val height = height
-//        val points = mPoints
-//
-//        //x축 점 사이의 거리
-//        val gapX = width.toFloat() / points.size
-//
-//        //y축 단위 사이의 거리
-//        val gapY = (height - mPointSize) / mDivide
-//
-//        val halfGab = gapX / 2
-//
-//        val length = points.size
-//        mPointX = IntArray(length)
-//        mPointY = IntArray(length)
-//
-//
-//        for (i in 0 until length) {
-//            // 점 좌표 구하기
-//            val x = halfGab + (i * gapX)
-//            val y = height - mPointRadius - (((points[i] / mUnit) - mOrigin) * gapY)
-//
-//            mPointX[i] = x.toInt()
-//            mPointY[i] = y
-//
-//            // 선 그리기
-//            if (i == 0)
-//                path.moveTo(x, y.toFloat())
-//            else
-//                path.lineTo(x, y.toFloat())
-//        }
-//
-//        // 그려진 선으로 shape을 만든다
-//        val shape = ShapeDrawable(PathShape(path, 1F, 1F))
-//        shape.setBounds(0, 0, 1, 1)
-//
-//        val paint = shape.paint
-//        paint.style = Paint.Style.STROKE
-//        paint.color = mLineColor
-//        paint.strokeWidth = mThickness
-//        paint.isAntiAlias = true
-//
-//        mLineShape = shape
-//    }
-//
-//    fun drawForBeforeDrawView() {
-//        viewTreeObserver.addOnGlobalLayoutListener {
-//            println("drawForBeforeDrawView")
-//            draw()
-//        }
-//    }
-//
-//    override fun onDraw(canvas: Canvas?) {
-//        println("onDraw")
-//        super.onDraw(canvas)
-//
-//        // 선 그리기
-//        canvas?.let { mLineShape.draw(it) }
-//
-//        // 점 그리기
-//        val length = mPointX.size
-//        for (i in 0 until length) {
-//            canvas?.drawCircle(
-//                mPointX[i].toFloat(),
-//                mPointY[i].toFloat(), mPointRadius.toFloat(), mPointPaint
-//            )
-//        }
-//    }
 }
