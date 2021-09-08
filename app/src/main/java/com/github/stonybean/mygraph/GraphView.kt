@@ -11,51 +11,47 @@ import android.view.View
  * Created by Joo on 2021/09/03
  */
 class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
-
-//    private lateinit var pointPaint: Paint
-
-
     private var thickness: Float = 0F
 
-    private val pointList: ArrayList<ArrayList<Int>> = ArrayList()
-    private val xList: ArrayList<Int> = ArrayList()
-    private val yList: ArrayList<Int> = ArrayList()
+    private val pointList: ArrayList<ArrayList<Int>> = ArrayList()  // 전체 숫자
+    private val xList: ArrayList<Int> = ArrayList()     // x축
+    private val yList: ArrayList<Int> = ArrayList()     // y축
 
-    private var pointSize: Int = 0
-    private var pointRadius: Int = 0
-    private var lineColorList: ArrayList<Int> = ArrayList()
+    private var circleSize: Int = 0
+    private var circleRadius: Int = 0
     private var unit: Int = 0
     private var origin: Int = 0
     private var divide: Int = 0
 
-    private val linePathList: ArrayList<Path> = ArrayList()     // 선 관리 리스트
-    private val pointPaintList: ArrayList<Paint> = ArrayList()  // 점별 색깔 관리 리스트
-    private val paintList: ArrayList<Paint> = ArrayList()       // 선별 색깔 관리 리스트
+    private var lineColorList: ArrayList<Int> = ArrayList()     // 선 색상(Int) 리스트
+    private val linePathList: ArrayList<Path> = ArrayList()     // 선 경로(Path) 리스트
+
+    private val circlePaintList: ArrayList<Paint> = ArrayList()  // 점별 색깔 관리 리스트 (Paint)
+    private val linePaintList: ArrayList<Paint> = ArrayList()    // 선별 색깔 관리 리스트 (Paint)
 
     // 그래프 초기화
     fun clearGraph() {
-        linePathList.clear()
-        pointPaintList.clear()
-        paintList.clear()
         lineColorList.clear()
+        linePathList.clear()
+
+        circlePaintList.clear()
+        linePaintList.clear()
 
         pointList.clear()
         xList.clear()
         yList.clear()
     }
 
-    // 색깔 지정
+    // 그래프 그리기 옵션
     fun setType(colorList: ArrayList<Int>) {
         colorList.forEach {
             val pointPaint = Paint()
             pointPaint.color = it
-            pointPaintList.add(pointPaint)
+            circlePaintList.add(pointPaint)
         }
 
-        println("pointPaintList : ${pointPaintList.toList()}")
-
-        pointSize = 20
-        pointRadius = pointSize / 2
+        circleSize = 20
+        circleRadius = circleSize / 2
 
         lineColorList.addAll(colorList)
         thickness = 2F
@@ -64,29 +60,23 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     // 그래프 정보
     fun setPoints(points: ArrayList<ArrayList<Int>>, unit: Int, origin: Int, divide: Int) {
-        pointList.addAll(points)   //y축 값 배열
+        pointList.addAll(points)   // y축 값 리스트
 
-        this.unit = unit       //y축 단위
-        this.origin = origin   //y축 원점
-        this.divide = divide   //y축 값 갯수
+        this.unit = unit       // y축 단위
+        this.origin = origin   // y축 원점
+        this.divide = divide   // y축 개수
     }
 
     // 그래프 만들기
-    private fun draw() {
-        val height = 810    // 높이 820으로 고정 아래,위 여백 10
+    private fun drawView() {
+        val height = 810    // 높이 810으로 고정 (아래,위 여백)
 
         for (i in pointList.indices) {
             val path = Path()
             val points = pointList[i]
 
-            // 점 사이 거리 (x축)
-            val gapX = width.toFloat() / points.size
-
-            // 단위 사이 거리 (y축)
-            val gapY = (height - pointSize) / divide
-
+            val gapX = width.toFloat() / points.size    // 점 사이 거리 (x축)
             val halfGab = gapX / 2
-
             val length = points.size    // 3
 
             for (j in 0 until length) {
@@ -115,24 +105,22 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             paint.strokeWidth = thickness
             paint.isAntiAlias = true
 
-            paintList.add(paint)
+            linePaintList.add(paint)
         }
     }
 
-    fun drawForBeforeDrawView() {
+    fun onDrawBeforeDrawView() {
         viewTreeObserver.addOnGlobalLayoutListener {
-            println("drawForBeforeDrawView")
-            draw()
+            drawView()
         }
     }
 
     override fun onDraw(canvas: Canvas?) {
-        println("onDraw")
         super.onDraw(canvas)
 
         // 선 그리기 (색깔 구분)
         for (i in linePathList.indices) {
-            canvas?.drawPath(linePathList[i], paintList[i])
+            canvas?.drawPath(linePathList[i], linePaintList[i])
         }
 
         // 점 그리기
@@ -149,7 +137,7 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 //            }
             canvas?.drawCircle(
                 xList[i].toFloat(),
-                yList[i].toFloat(), pointRadius.toFloat(),
+                yList[i].toFloat(), circleRadius.toFloat(),
                 paint
             )
         }
