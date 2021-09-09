@@ -1,4 +1,4 @@
-package com.github.stonybean.mygraph
+package com.github.stonybean.mygraph.view
 
 import android.Manifest
 import android.content.Context
@@ -17,20 +17,17 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.pdf.PdfDocument
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import com.github.stonybean.mygraph.viewmodel.GraphViewModel
+import com.github.stonybean.mygraph.R
 import com.github.stonybean.mygraph.utils.FilePathGetter
 import com.github.stonybean.mygraph.utils.RandomColorMaker
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * Created by Joo on 2021/09/03
@@ -38,13 +35,16 @@ import java.io.IOException
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    // ViewModel DI
+    private val viewModel: GraphViewModel by viewModel()
+
     // ActivityResultLauncher
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
 
     // Permission 처리
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            Toast.makeText(this, "권한을 허용해 주세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_request_permission), Toast.LENGTH_SHORT).show()
         }
 
     // 그래프 넘겨줄 전체 포인트 리스트
@@ -59,6 +59,14 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.activity = this@MainActivity
 
+        viewModel.isSave.observe(this, { isSave ->
+            if (isSave) {
+                Toast.makeText(this, getString(R.string.toast_save_success), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getString(R.string.toast_save_fail), Toast.LENGTH_SHORT).show()
+            }
+        })
+
         // Floating Action Button
         binding.fab.setOnClickListener {
             addCell()   // 셀 동적 추가
@@ -67,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         // LongClick -> onClickSavePdf() -> resultLauncher -> savePdf()
         binding.fab.setOnLongClickListener {
             hideKeyboard()
-            onClickSavePdf()    // PDF로 저장
+            requestSavePdf()    // PDF로 저장
             true
         }
 
@@ -78,7 +86,7 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 val uri = result.data!!.data
                 val uriPath = FilePathGetter().getPath(this, uri!!)
-                savePdf(binding.rlGraphLayout, uriPath)
+                viewModel.savePdf(binding.rlGraphLayout, uriPath)
             }
         }
 
@@ -98,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         colorList.clear()
     }
 
-    // 그래프 타이틀 동적 추가
+    /***** 그래프 타이틀 동적 추가 *****/
     fun addCellTitle(childCount: Int, title: String) {
         val itemCellTextBinding = ItemCellTextBinding.inflate(layoutInflater)
 
@@ -109,7 +117,7 @@ class MainActivity : AppCompatActivity() {
         binding.llCellTitle.addView(itemCellTextBinding.root)
     }
 
-    // 셀 동적 추가 (binding.fab)
+    /***** 셀 동적 추가 (binding.fab) *****/
     private fun addCell() {
         val layout = binding.llCellItem
         val itemCellBinding = ItemCellBinding.inflate(layoutInflater)
@@ -132,76 +140,24 @@ class MainActivity : AppCompatActivity() {
         colorList.add(titleTag, RandomColorMaker().randomColor())  // 색깔 배정(타이틀, 그래프 선)
     }
 
-    // 그래프 그리기
+    /***** 그래프 그리기 *****/
     fun drawGraph() {
         val graphPointList: ArrayList<ArrayList<Int>> = ArrayList()
 
-        var sum = 0
-        var total = 0
         for (i in pointList.keys) {
-            // 모든 항목 전체 합과 개수 구하기
+            // 모든 항목 전체
             graphPointList.add(pointList[i]!!.toList() as ArrayList<Int>)
-            sum += pointList[i]!!.sum()
-            total += pointList[i]!!.count()
         }
 
         binding.gvCell.clearGraph()
-        binding.gvCell.setType(colorList)
-        binding.gvCell.setPoints(
-            graphPointList,
-            sum / total,    // 평균값
-            0,             // 시작점
-            10            // 나눠서 표시할 구역수
-        )
-
+        binding.gvCell.setColors(colorList)
+        binding.gvCell.setPoints(graphPointList)
         binding.rlGraphLayout.visibility = View.VISIBLE
-        binding.gvCell.onDrawBeforeDrawView()
+        binding.gvCell.drawViewBeforeOnDraw()
     }
 
-    /***** PDF 저장 *****/
-    // View -> Bitmap 변환
-    private fun getBitmapFromView(view: View): Bitmap? {
-        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        view.draw(canvas)
-        return bitmap
-    }
-
-    // Bitmap -> PDF 변환 후 저장
-    private fun savePdf(view: View, uriPath: String) {
-        // 그래프 레이아웃 비트맵으로 만들기
-        val bitmap = getBitmapFromView(view)
-
-        // PdfDocument 페이지 빌더 생성 (그래프 레이아웃 가로/세로 크기)
-        val pdfDocument = PdfDocument()
-        val myPageInfo = PdfDocument.PageInfo.Builder(
-            view.width,
-            view.height,
-            1
-        ).create()
-
-        val page = pdfDocument.startPage(myPageInfo)
-
-        // page에 그래프 레이아웃 그리기
-        page.canvas.drawBitmap(bitmap!!, 0F, 0F, null)
-        pdfDocument.finishPage(page)
-
-        // 사용자가 지정, 저장한 경로로 현재 PDF 그림 파일 덮어쓰기
-        val filePath = File(uriPath)
-        try {
-            pdfDocument.writeTo(FileOutputStream(filePath))
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Toast.makeText(this, "저장에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // PdfDocument 닫기
-        pdfDocument.close()
-        Toast.makeText(this, "저장에 성공하였습니다.", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun onClickSavePdf() {
+    /***** 권한 확인/요청, 파일 탐색기 열기 (저장할 곳) *****/
+    private fun requestSavePdf() {
         if (binding.rlGraphLayout.visibility == View.GONE) {
             return
         }
@@ -273,7 +229,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun afterTextChanged(p0: Editable?) {
             if (p0!!.isNotEmpty() && p0.toString().toInt() > 800) {
-                Toast.makeText(this@MainActivity, "800 이하로만 입력할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, getString(R.string.toast_limit_number), Toast.LENGTH_SHORT).show()
                 p0.clear()
                 return
             }

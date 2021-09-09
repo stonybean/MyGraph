@@ -6,7 +6,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".view.MainActivity">
 
         <RelativeLayout
             android:id="@+id/rl_graph_layout"
@@ -109,7 +109,7 @@
 
             </ScrollView>
 
-            <com.github.stonybean.mygraph.GraphView
+            <com.github.stonybean.mygraph.view.GraphView
                 android:id="@+id/gv_cell"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
@@ -160,6 +160,6 @@
 
         <variable
             name="activity"
-            type="com.github.stonybean.mygraph.MainActivity" />
+            type="com.github.stonybean.mygraph.view.MainActivity" />
     </data>
 </layout>
