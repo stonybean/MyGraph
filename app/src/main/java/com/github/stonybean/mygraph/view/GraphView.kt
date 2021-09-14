@@ -49,7 +49,7 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     // 그래프 껍데기 만들기
     private fun drawView() {
-        val height = 810    // 높이 810으로 고정 (아래,위 여백)
+        val height = 680    // 높이 810으로 고정 (아래,위 여백)
 
         for (i in pointList.indices) {
             val path = Path()
